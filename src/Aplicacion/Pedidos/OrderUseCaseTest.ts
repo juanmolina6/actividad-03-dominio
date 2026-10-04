@@ -64,5 +64,51 @@ async function testConfirmOrderUseCase(): Promise<void> {
     console.log("Prueba exitosa: el pedido fue confirmado correctamente");
 }
 
-// Ejecutamos la prueba.
+// Prueba que un pedido confirmado no pueda confirmarse nuevamente.
+async function testCannotConfirmAlreadyConfirmedOrder(): Promise<void> {
+
+    // Creamos el repositorio en memoria.
+    const repository = new InMemoryOrderRepository();
+
+    // Creamos el identificador y el pedido.
+    const orderId = new OrderId("pedido-2");
+    const order = new Order(orderId);
+
+    // Guardamos el pedido.
+    repository.add(order);
+
+    // Creamos el caso de uso.
+    const useCase = new ConfirmOrderUseCase(repository);
+
+    // Primera confirmación.
+    await useCase.execute(orderId);
+
+    // Intentamos confirmar nuevamente el mismo pedido.
+    try {
+        await useCase.execute(orderId);
+
+        // Si llegamos aquí, la regla no funcionó.
+        throw new Error(
+            "La prueba falló: el pedido pudo confirmarse dos veces"
+        );
+
+    } catch (error) {
+
+        // Verificamos que el error corresponda a la regla del dominio.
+        if (
+            error instanceof Error &&
+            error.message ===
+                "El pedido no puede ser confirmado en su estado actual"
+        ) {
+            console.log(
+                "Prueba exitosa: un pedido confirmado no puede confirmarse nuevamente"
+            );
+        } else {
+            throw error;
+        }
+    }
+}
+
+// Ejecutamos las pruebas.
 testConfirmOrderUseCase();
+testCannotConfirmAlreadyConfirmedOrder();
