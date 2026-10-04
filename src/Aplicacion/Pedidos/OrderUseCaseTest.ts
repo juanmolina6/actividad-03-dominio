@@ -1,36 +1,7 @@
 import { OrderId } from "../../Pedidos/OrderId.js";
 import { Order } from "../../Pedidos/Order.js";
 import { ConfirmOrderUseCase } from "./ConfirmOrderUseCase.js";
-import type { IOrderRepository } from "./IOrderRepository.js";
-
-// Repositorio en memoria para probar el caso de uso.
-class InMemoryOrderRepository implements IOrderRepository {
-
-    private orders: Order[] = [];
-
-    async getById(orderId: OrderId): Promise<Order | null> {
-        return this.orders.find(
-            order => order.getId().getValue() === orderId.getValue()
-        ) ?? null;
-    }
-
-    async save(order: Order): Promise<void> {
-        const index = this.orders.findIndex(
-            existingOrder =>
-                existingOrder.getId().getValue() === order.getId().getValue()
-        );
-
-        if (index >= 0) {
-            this.orders[index] = order;
-        } else {
-            this.orders.push(order);
-        }
-    }
-
-    add(order: Order): void {
-        this.orders.push(order);
-    }
-}
+import { InMemoryOrderRepository } from "../../Infraestructura/Pedidos/InMemoryOrderRepository.js";
 
 // Prueba del caso de uso.
 async function testConfirmOrderUseCase(): Promise<void> {
@@ -83,30 +54,36 @@ async function testCannotConfirmAlreadyConfirmedOrder(): Promise<void> {
     // Primera confirmación.
     await useCase.execute(orderId);
 
+    // Variable para comprobar si la segunda confirmación fue rechazada.
+    let errorCaught = false;
+
     // Intentamos confirmar nuevamente el mismo pedido.
     try {
         await useCase.execute(orderId);
-
-        // Si llegamos aquí, la regla no funcionó.
-        throw new Error(
-            "La prueba falló: el pedido pudo confirmarse dos veces"
-        );
-
     } catch (error) {
 
-        // Verificamos que el error corresponda a la regla del dominio.
+        // Comprobamos que el error corresponda a la regla del dominio.
         if (
             error instanceof Error &&
             error.message ===
                 "El pedido no puede ser confirmado en su estado actual"
         ) {
-            console.log(
-                "Prueba exitosa: un pedido confirmado no puede confirmarse nuevamente"
-            );
+            errorCaught = true;
         } else {
             throw error;
         }
     }
+
+    // Si no se produjo el error esperado, la prueba falla.
+    if (!errorCaught) {
+        throw new Error(
+            "La prueba falló: el pedido pudo confirmarse dos veces"
+        );
+    }
+
+    console.log(
+        "Prueba exitosa: un pedido confirmado no puede confirmarse nuevamente"
+    );
 }
 
 // Ejecutamos las pruebas.
