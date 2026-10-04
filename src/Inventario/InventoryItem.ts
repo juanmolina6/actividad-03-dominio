@@ -1,5 +1,5 @@
 // Importamos el objeto de valor que identifica al producto.
-import { ProductId } from "./ProductId";
+import { ProductId } from "./ProductId.js";
 
 // Entidad principal del contexto de Inventario.
 export class InventoryItem {
