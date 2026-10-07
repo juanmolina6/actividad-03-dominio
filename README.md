@@ -1,5 +1,8 @@
 # Actividad 03 - Diseño de dominio
 
+## Link del Video de entrega 
+https://youtu.be/yQO6Lv0LtOs
+
 ## Propósito
 
 Esta actividad busca proteger reglas del negocio mediante entidades, objetos de valor, invariantes, casos de uso y contratos de aplicación.
